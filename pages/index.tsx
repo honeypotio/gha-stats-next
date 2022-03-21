@@ -1,9 +1,18 @@
 import type { NextPage } from 'next'
+import { useEffect } from 'react';
 import Head from 'next/head'
 import Image from 'next/image'
+import { Octokit } from "@octokit/rest";
+
+import data from '../mock-data.json';
 import styles from '../styles/Home.module.css'
 
-const Home: NextPage = () => {
+const Home: NextPage<{ runs: any }> = ({runs}) => {
+  useEffect(() => {
+    console.log(runs[0])
+    console.log(runs.length)
+  }, []);
+
   return (
     <div className={styles.container}>
       <Head>
@@ -67,6 +76,43 @@ const Home: NextPage = () => {
       </footer>
     </div>
   )
+}
+
+export const getStaticProps = async () => {
+  if (process.env.USE_MOCK_DATA === "true") {
+    return {
+      props: {
+        runs: data,
+      },
+    }
+  } else {
+    const octokit = new Octokit({
+      auth: process.env.GITHUB_TOKEN,
+    });
+
+    const workflows = await octokit.rest.actions.listRepoWorkflows({
+      owner: process.env.GITHUB_ORG as string,
+      repo: process.env.GITHUB_REPO as string,
+    });
+
+    const workflowId = workflows.data.workflows.find(
+      (workflow) => workflow.name === process.env.GITHUB_WORKFLOW
+    )?.id;
+
+    const runs = await octokit.paginate(octokit.actions.listWorkflowRuns, {
+      owner: process.env.GITHUB_ORG as string,
+      repo: process.env.GITHUB_REPO as string,
+      workflow_id: workflowId as number,
+      per_page: 100,
+      event: "push",
+    });
+
+    return {
+      props: {
+        runs,
+      },
+    }
+  }
 }
 
 export default Home
