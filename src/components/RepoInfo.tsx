@@ -1,6 +1,6 @@
 import type { NextPage } from "next";
 
-import styles from "../../styles/RepoInfo.module.css";
+import styles from "../../styles/Styles.module.css";
 
 const RepoInfo: NextPage<{
   org: string;

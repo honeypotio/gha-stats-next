@@ -1,18 +1,7 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import { Line } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
 
-import styles from "../styles/Home.module.css";
+import styles from "../styles/Styles.module.css";
 import {
   groupByDay,
   removeRawRuns,
@@ -22,16 +11,8 @@ import {
 import { fectchRuns } from "../src/utils/github";
 import { deepClone } from "../src/utils/js";
 import RepoInfo from "../src/components/RepoInfo";
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
+import SuccessRate from "../src/components/SuccessRate";
+import Runtime from "../src/components/Runtime";
 
 const Home: NextPage<{
   runtimeStats: any;
@@ -53,78 +34,8 @@ const Home: NextPage<{
 
       <main className={styles.main}>
         <RepoInfo org={org} repo={repo} workflow={workflow} branch={branch} />
-
-        <p className={styles.description}>CI success rate (%) ↗</p>
-
-        <Line
-          options={{
-            responsive: true,
-            plugins: {
-              legend: {
-                position: "top" as const,
-              },
-              title: {
-                display: true,
-              },
-            },
-          }}
-          data={{
-            labels: Object.keys(successStats).sort(),
-            datasets: [
-              {
-                label: "Daily success rate",
-                data: Object.keys(successStats)
-                  .sort()
-                  .map((key) => successStats[key].successRate),
-                borderColor: "#c9e3c5",
-              },
-              {
-                label: "7-point moving success rate",
-                data: Object.keys(successStats)
-                  .sort()
-                  .map((key) => successStats[key].movingByDaySuccessRate.seven),
-                borderColor: "#33a122",
-              },
-            ],
-          }}
-        />
-
-        <p className={styles.description}>CI runtime (seconds) ↘</p>
-
-        <Line
-          options={{
-            responsive: true,
-            plugins: {
-              legend: {
-                position: "top" as const,
-              },
-              title: {
-                display: true,
-              },
-            },
-          }}
-          data={{
-            labels: Object.keys(runtimeStats).sort(),
-            datasets: [
-              {
-                label: "Daily average",
-                data: Object.keys(runtimeStats)
-                  .sort()
-                  .map((key) => runtimeStats[key].avgSuccessTime),
-                borderColor: "#c7d3f0",
-              },
-              {
-                label: "7-point moving average",
-                data: Object.keys(runtimeStats)
-                  .sort()
-                  .map(
-                    (key) => runtimeStats[key].movingByDayAvgSuccessTime.seven
-                  ),
-                borderColor: "#034efc",
-              },
-            ],
-          }}
-        />
+        <SuccessRate successStats={successStats} />
+        <Runtime runtimeStats={runtimeStats} />
       </main>
 
       <footer className={styles.footer}>
