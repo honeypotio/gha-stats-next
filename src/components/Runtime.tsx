@@ -46,13 +46,6 @@ const Runtime: NextPage<{
           labels: Object.keys(runtimeStats).sort(),
           datasets: [
             {
-              label: "Daily average",
-              data: Object.keys(runtimeStats)
-                .sort()
-                .map((key) => runtimeStats[key].avgSuccessTime),
-              borderColor: "#c7d3f0",
-            },
-            {
               label: "7-point moving average",
               data: Object.keys(runtimeStats)
                 .sort()
@@ -60,6 +53,13 @@ const Runtime: NextPage<{
                   (key) => runtimeStats[key].movingByDayAvgSuccessTime.seven
                 ),
               borderColor: "#034efc",
+            },
+            {
+              label: "Daily average",
+              data: Object.keys(runtimeStats)
+                .sort()
+                .map((key) => runtimeStats[key].avgSuccessTime),
+              borderColor: "#c7d3f0",
             },
           ],
         }}

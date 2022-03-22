@@ -46,18 +46,18 @@ const SuccessRate: NextPage<{
           labels: Object.keys(successStats).sort(),
           datasets: [
             {
-              label: "Daily success rate",
-              data: Object.keys(successStats)
-                .sort()
-                .map((key) => successStats[key].successRate),
-              borderColor: "#c9e3c5",
-            },
-            {
               label: "7-point moving success rate",
               data: Object.keys(successStats)
                 .sort()
                 .map((key) => successStats[key].movingByDaySuccessRate.seven),
               borderColor: "#33a122",
+            },
+            {
+              label: "Daily success rate",
+              data: Object.keys(successStats)
+                .sort()
+                .map((key) => successStats[key].successRate),
+              borderColor: "#c9e3c5",
             },
           ],
         }}
