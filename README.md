@@ -1,10 +1,8 @@
 # ghs-stats-next
 
-#### Visualized statistics of GitHub Actions CI
+### Visualized statistics of GitHub Actions CI
 
-Deployed nightly to GH Pages:
-
-https://honeypotio.github.io/gha-stats-next/
+Deployed nightly to GH Pages: https://honeypotio.github.io/gha-stats-next/
 
 ## Usage
 
