@@ -1,7 +1,6 @@
 import type { NextPage } from 'next'
 import { useEffect } from 'react';
 import Head from 'next/head'
-import Image from 'next/image'
 import { Octokit } from "@octokit/rest";
 import moment from "moment";
 import { Line } from "react-chartjs-2";
@@ -18,7 +17,7 @@ import {
 
 import mockData from '../mock-data.json';
 import styles from '../styles/Home.module.css'
-import { median, movingStat } from '../src/utils/math';
+import { average, median, movingStat } from '../src/utils/math';
 
 ChartJS.register(
   CategoryScale,
@@ -30,7 +29,7 @@ ChartJS.register(
   Legend
 );
 
-const Home: NextPage<{ stats: any }> = ({stats}) => {
+const Home: NextPage<{ stats: any, org: string, repo: string, workflow: string, branch: string }> = ({stats, org, repo, workflow, branch}) => {
   useEffect(() => {
     console.log(stats)
   }, []);
@@ -45,12 +44,11 @@ const Home: NextPage<{ stats: any }> = ({stats}) => {
 
       <main className={styles.main}>
         <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
+          GitHub Actions statistics
         </h1>
 
         <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.tsx</code>
+          <code className={styles.code}>{org}/{repo}{' '}{workflow}@{branch}</code>
         </p>
 
         <Line
@@ -62,7 +60,7 @@ const Home: NextPage<{ stats: any }> = ({stats}) => {
             },
             title: {
               display: true,
-              text: "Chart.js Bar Chart",
+              text: "CI runtime (seconds)",
             },
           },
         }}
@@ -70,8 +68,34 @@ const Home: NextPage<{ stats: any }> = ({stats}) => {
           labels: Object.keys(stats),
           datasets: [
             {
-              label: "avgSuccessTime",
-              data: Object.keys(stats).map((key) => median(stats[key].avgSuccessTimes)),
+              label: "Median",
+              data: Object.keys(stats).map((key) => stats[key].medianSuccessTime),
+              borderColor: "#2cfc03"
+            },
+            {
+              label: "Average",
+              data: Object.keys(stats).map((key) => stats[key].avgSuccessTime),
+              borderColor: "#034efc"
+            },
+            {
+              label: "7-day moving average",
+              data: Object.keys(stats).map((key) => stats[key].movingByDayAvgSuccessTime.seven),
+              borderColor: "#fcba03"
+            },
+            {
+              label: "14-day moving average",
+              data: Object.keys(stats).map((key) => stats[key].movingByDayAvgSuccessTime.fourteen),
+              borderColor: "#face52"
+            },
+            {
+              label: "7-day moving median",
+              data: Object.keys(stats).map((key) => stats[key].movingByDayMedianSuccessTime.seven),
+              borderColor: "#d34ff7"
+            },
+            {
+              label: "14-day moving median",
+              data: Object.keys(stats).map((key) => stats[key].movingByDayMedianSuccessTime.fourteen),
+              borderColor: "#c603fc"
             },
           ],
         }}
@@ -80,14 +104,11 @@ const Home: NextPage<{ stats: any }> = ({stats}) => {
 
       <footer className={styles.footer}>
         <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
+          href="https://honeypot.io/"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Powered by{' '}
-          <span className={styles.logo}>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-          </span>
+          Powered by Honeypot
         </a>
       </footer>
     </div>
@@ -143,25 +164,62 @@ const sanitizeRuns = (runs: any) => {
       statsPerDay[key].conclusion[run.conclusion] += 1;
     });
 
-    statsPerDay[key].avgSuccessTimes = statsPerDay[key].runs.map((run: any) => {
+    statsPerDay[key].successTimes = statsPerDay[key].runs.map((run: any) => {
       const createdAtTime = Date.parse(run.run_started_at);
       const updatedAtTime = Date.parse(run.updated_at);
       const durationMs = updatedAtTime - createdAtTime;
-      return durationMs / 1000 / 60; // Minutes
+      return durationMs / 1000;
     })
   });
 
   return statsPerDay
 }
 
+const addCalculatedStats = (stats) => {
+  Object.keys(stats).forEach((key) => {
+    stats[key].avgSuccessTime = average(stats[key].successTimes)
+    stats[key].medianSuccessTime = median(stats[key].successTimes)
+  })
+
+  // These are not perfect as the moving stat is calculated based on the avg/median of the day
+  // It should rather take each value of the day, but because days have different count of values, keeping track of moving avg/median becomes complicated
+  const movingByDayAvgSuccessTime = {
+    seven: movingStat(Object.keys(stats).map((key) => stats[key].avgSuccessTime), 7, 0, average),
+    fourteen: movingStat(Object.keys(stats).map((key) => stats[key].avgSuccessTime), 14, 0, average)
+  }
+  const movingByDayMedianSuccessTime = {
+    seven: movingStat(Object.keys(stats).map((key) => stats[key].medianSuccessTime), 7, 0, median),
+    fourteen: movingStat(Object.keys(stats).map((key) => stats[key].medianSuccessTime), 14, 0, median)
+  }
+  let index = 0;
+
+  Object.keys(stats).forEach((key) => {
+    stats[key].movingByDayAvgSuccessTime = {
+      seven: movingByDayAvgSuccessTime.seven[index],
+      fourteen: movingByDayAvgSuccessTime.fourteen[index]
+    }
+    stats[key].movingByDayMedianSuccessTime = {
+      seven: movingByDayMedianSuccessTime.seven[index],
+      fourteen: movingByDayMedianSuccessTime.fourteen[index]
+    }
+    index++;
+  })
+
+  return stats
+}
+
 export const getStaticProps = async () => {
   const runs = process.env.USE_MOCK_DATA === "true" ? mockData : fectchRuns()
 
-  const stats = sanitizeRuns(runs);
+  const stats = addCalculatedStats(sanitizeRuns(runs));
 
   return {
     props: {
-      stats
+      stats,
+      org: process.env.GITHUB_ORG,
+      repo: process.env.GITHUB_REPO,
+      workflow: process.env.GITHUB_WORKFLOW,
+      branch: process.env.GITHUB_BRANCH,
     },
   }
 }
