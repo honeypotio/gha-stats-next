@@ -1,6 +1,6 @@
-import type { NextPage } from 'next'
-import { useEffect } from 'react';
-import Head from 'next/head'
+import type { NextPage } from "next";
+import { useEffect } from "react";
+import Head from "next/head";
 import { Octokit } from "@octokit/rest";
 import moment from "moment";
 import { Line } from "react-chartjs-2";
@@ -15,8 +15,8 @@ import {
   Legend,
 } from "chart.js";
 
-import styles from '../styles/Home.module.css'
-import { average, median, movingStat } from '../src/utils/math';
+import styles from "../styles/Home.module.css";
+import { average, median, movingStat } from "../src/utils/math";
 
 ChartJS.register(
   CategoryScale,
@@ -28,7 +28,13 @@ ChartJS.register(
   Legend
 );
 
-const Home: NextPage<{ stats: any, org: string, repo: string, workflow: string, branch: string }> = ({stats, org, repo, workflow, branch}) => {
+const Home: NextPage<{
+  stats: any;
+  org: string;
+  repo: string;
+  workflow: string;
+  branch: string;
+}> = ({ stats, org, repo, workflow, branch }) => {
   return (
     <div className={styles.container}>
       <Head>
@@ -38,17 +44,15 @@ const Home: NextPage<{ stats: any, org: string, repo: string, workflow: string, 
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
-          GitHub Actions statistics
-        </h1>
+        <h1 className={styles.title}>GitHub Actions statistics</h1>
 
         <p className={styles.description}>
-          <code className={styles.code}>{org}/{repo}{' '}{workflow}@{branch}</code>
+          <code className={styles.code}>
+            {org}/{repo} {workflow}@{branch}
+          </code>
         </p>
 
-        <p className={styles.description}>
-          CI runtime (seconds)
-        </p>
+        <p className={styles.description}>CI runtime (seconds)</p>
 
         <Line
           options={{
@@ -67,41 +71,51 @@ const Home: NextPage<{ stats: any, org: string, repo: string, workflow: string, 
             datasets: [
               {
                 label: "Median",
-                data: Object.keys(stats).map((key) => stats[key].medianSuccessTime),
-                borderColor: "#2cfc03"
+                data: Object.keys(stats).map(
+                  (key) => stats[key].medianSuccessTime
+                ),
+                borderColor: "#2cfc03",
               },
               {
                 label: "Average",
-                data: Object.keys(stats).map((key) => stats[key].avgSuccessTime),
-                borderColor: "#034efc"
+                data: Object.keys(stats).map(
+                  (key) => stats[key].avgSuccessTime
+                ),
+                borderColor: "#034efc",
               },
               {
                 label: "7-day moving average",
-                data: Object.keys(stats).map((key) => stats[key].movingByDayAvgSuccessTime.seven),
-                borderColor: "#fcba03"
+                data: Object.keys(stats).map(
+                  (key) => stats[key].movingByDayAvgSuccessTime.seven
+                ),
+                borderColor: "#fcba03",
               },
               {
                 label: "14-day moving average",
-                data: Object.keys(stats).map((key) => stats[key].movingByDayAvgSuccessTime.fourteen),
-                borderColor: "#face52"
+                data: Object.keys(stats).map(
+                  (key) => stats[key].movingByDayAvgSuccessTime.fourteen
+                ),
+                borderColor: "#face52",
               },
               {
                 label: "7-day moving median",
-                data: Object.keys(stats).map((key) => stats[key].movingByDayMedianSuccessTime.seven),
-                borderColor: "#d34ff7"
+                data: Object.keys(stats).map(
+                  (key) => stats[key].movingByDayMedianSuccessTime.seven
+                ),
+                borderColor: "#d34ff7",
               },
               {
                 label: "14-day moving median",
-                data: Object.keys(stats).map((key) => stats[key].movingByDayMedianSuccessTime.fourteen),
-                borderColor: "#c603fc"
+                data: Object.keys(stats).map(
+                  (key) => stats[key].movingByDayMedianSuccessTime.fourteen
+                ),
+                borderColor: "#c603fc",
               },
             ],
           }}
         />
 
-        <p className={styles.description}>
-        CI success rate (%)
-        </p>
+        <p className={styles.description}>CI success rate (%)</p>
 
         <Line
           options={{
@@ -121,17 +135,21 @@ const Home: NextPage<{ stats: any, org: string, repo: string, workflow: string, 
               {
                 label: "Success rate",
                 data: Object.keys(stats).map((key) => stats[key].successRate),
-                borderColor: "#2cfc03"
+                borderColor: "#2cfc03",
               },
               {
                 label: "7-day moving success rate",
-                data: Object.keys(stats).map((key) => stats[key].movingByDaySuccessRate.seven),
-                borderColor: "#fcba03"
+                data: Object.keys(stats).map(
+                  (key) => stats[key].movingByDaySuccessRate.seven
+                ),
+                borderColor: "#fcba03",
               },
               {
                 label: "14-day moving success rate",
-                data: Object.keys(stats).map((key) => stats[key].movingByDaySuccessRate.fourteen),
-                borderColor: "#face52"
+                data: Object.keys(stats).map(
+                  (key) => stats[key].movingByDaySuccessRate.fourteen
+                ),
+                borderColor: "#face52",
               },
             ],
           }}
@@ -148,8 +166,8 @@ const Home: NextPage<{ stats: any, org: string, repo: string, workflow: string, 
         </a>
       </footer>
     </div>
-  )
-}
+  );
+};
 
 const fectchRuns = async () => {
   const octokit = new Octokit({
@@ -172,7 +190,7 @@ const fectchRuns = async () => {
     per_page: 100,
     event: "push",
   });
-}
+};
 
 interface ObjectLiteral {
   [key: string]: any;
@@ -182,10 +200,11 @@ const sanitizeRuns = (runs: any) => {
   const statsPerDay: ObjectLiteral = {};
 
   runs.forEach((run: any) => {
+    if (run.status !== "completed") return;
     const day = moment(run.run_started_at).format("YYYY-MM-DD");
     if (!statsPerDay[day]) statsPerDay[day] = { runs: [], total: 0 };
     statsPerDay[day].runs.push(run);
-  })
+  });
 
   Object.keys(statsPerDay).forEach((key) => {
     statsPerDay[key].total = statsPerDay[key].runs.length;
@@ -205,63 +224,97 @@ const sanitizeRuns = (runs: any) => {
       const updatedAtTime = Date.parse(run.updated_at);
       const durationMs = updatedAtTime - createdAtTime;
       return durationMs / 1000;
-    })
+    });
   });
 
-  return statsPerDay
-}
+  return statsPerDay;
+};
 
 const addCalculatedStats = (stats: any) => {
   Object.keys(stats).forEach((key) => {
-    stats[key].avgSuccessTime = average(stats[key].successTimes)
-    stats[key].medianSuccessTime = median(stats[key].successTimes)
-    stats[key].successRate = stats[key].conclusion.success / stats[key].total * 100
-  })
+    stats[key].avgSuccessTime = average(stats[key].successTimes);
+    stats[key].medianSuccessTime = median(stats[key].successTimes);
+    stats[key].successRate =
+      (stats[key].conclusion.success / stats[key].total) * 100;
+  });
 
   // These are not perfect as the moving stat is calculated based on the avg/median of the day
   // It should rather take each value of the day, but because days have different count of values, keeping track of moving avg/median becomes complicated
   const movingByDayAvgSuccessTime = {
-    seven: movingStat(Object.keys(stats).map((key) => stats[key].avgSuccessTime), 7, 0, average),
-    fourteen: movingStat(Object.keys(stats).map((key) => stats[key].avgSuccessTime), 14, 0, average)
-  }
+    seven: movingStat(
+      Object.keys(stats).map((key) => stats[key].avgSuccessTime),
+      7,
+      0,
+      average
+    ),
+    fourteen: movingStat(
+      Object.keys(stats).map((key) => stats[key].avgSuccessTime),
+      14,
+      0,
+      average
+    ),
+  };
   const movingByDayMedianSuccessTime = {
-    seven: movingStat(Object.keys(stats).map((key) => stats[key].medianSuccessTime), 7, 0, median),
-    fourteen: movingStat(Object.keys(stats).map((key) => stats[key].medianSuccessTime), 14, 0, median)
-  }
+    seven: movingStat(
+      Object.keys(stats).map((key) => stats[key].medianSuccessTime),
+      7,
+      0,
+      median
+    ),
+    fourteen: movingStat(
+      Object.keys(stats).map((key) => stats[key].medianSuccessTime),
+      14,
+      0,
+      median
+    ),
+  };
   const movingByDaySuccessRate = {
-    seven: movingStat(Object.keys(stats).map((key) => stats[key].successRate), 7, 0, average),
-    fourteen: movingStat(Object.keys(stats).map((key) => stats[key].successRate), 14, 0, average)
-  }
+    seven: movingStat(
+      Object.keys(stats).map((key) => stats[key].successRate),
+      7,
+      0,
+      average
+    ),
+    fourteen: movingStat(
+      Object.keys(stats).map((key) => stats[key].successRate),
+      14,
+      0,
+      average
+    ),
+  };
   let index = 0;
 
   Object.keys(stats).forEach((key) => {
     stats[key].movingByDayAvgSuccessTime = {
       seven: movingByDayAvgSuccessTime.seven[index],
-      fourteen: movingByDayAvgSuccessTime.fourteen[index]
-    }
+      fourteen: movingByDayAvgSuccessTime.fourteen[index],
+    };
     stats[key].movingByDayMedianSuccessTime = {
       seven: movingByDayMedianSuccessTime.seven[index],
-      fourteen: movingByDayMedianSuccessTime.fourteen[index]
-    }
+      fourteen: movingByDayMedianSuccessTime.fourteen[index],
+    };
     stats[key].movingByDaySuccessRate = {
       seven: movingByDaySuccessRate.seven[index],
-      fourteen: movingByDaySuccessRate.fourteen[index]
-    }
+      fourteen: movingByDaySuccessRate.fourteen[index],
+    };
 
     index++;
-  })
+  });
 
-  return stats
-}
+  return stats;
+};
 
 const loadMockData = async () => {
   // Note that everything within data is loaded: https://stackoverflow.com/a/47956054/2771889
-  const data = await import(`../data/${process.env.MOCK_DATA}`)
-  return Array.from(data)
-}
+  const data = await import(`../data/${process.env.MOCK_DATA}`);
+  return Array.from(data);
+};
 
 export const getStaticProps = async () => {
-  const runs = process.env.USE_MOCK_DATA === "true" ? await loadMockData() : await fectchRuns()
+  const runs =
+    process.env.USE_MOCK_DATA === "true"
+      ? await loadMockData()
+      : await fectchRuns();
 
   const stats = addCalculatedStats(sanitizeRuns(runs));
 
@@ -273,7 +326,7 @@ export const getStaticProps = async () => {
       workflow: process.env.REPO_WORKFLOW,
       branch: process.env.REPO_BRANCH,
     },
-  }
-}
+  };
+};
 
-export default Home
+export default Home;
