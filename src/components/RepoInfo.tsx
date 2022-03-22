@@ -1,5 +1,4 @@
 import type { NextPage } from "next";
-import { useEffect } from "react";
 
 import styles from "../../styles/RepoInfo.module.css";
 
@@ -9,9 +8,6 @@ const RepoInfo: NextPage<{
   workflow: string;
   branch: string;
 }> = ({ org, repo, workflow, branch }) => {
-  useEffect(() => {
-    console.log(org);
-  });
   return (
     <h1 className={styles.title}>
       <code className={styles.code}>

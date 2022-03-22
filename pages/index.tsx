@@ -1,5 +1,4 @@
 import type { NextPage } from "next";
-import { useEffect } from "react";
 import Head from "next/head";
 import { Line } from "react-chartjs-2";
 import {
@@ -39,11 +38,6 @@ const Home: NextPage<{
   successStats: any;
   repoConfig: ObjectLiteral;
 }> = ({ runtimeStats, successStats, repoConfig }) => {
-  useEffect(() => {
-    console.log(successStats);
-    console.log(runtimeStats);
-  });
-
   const { org, repo, workflow, branch } = repoConfig;
 
   return (
