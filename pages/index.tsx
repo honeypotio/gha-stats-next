@@ -4,9 +4,31 @@ import Head from 'next/head'
 import Image from 'next/image'
 import { Octokit } from "@octokit/rest";
 import moment from "moment";
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
 
 import mockData from '../mock-data.json';
 import styles from '../styles/Home.module.css'
+import { median, movingStat } from '../src/utils/math';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const Home: NextPage<{ stats: any }> = ({stats}) => {
   useEffect(() => {
@@ -31,35 +53,29 @@ const Home: NextPage<{ stats: any }> = ({stats}) => {
           <code className={styles.code}>pages/index.tsx</code>
         </p>
 
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h2>Documentation &rarr;</h2>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h2>Learn &rarr;</h2>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className={styles.card}
-          >
-            <h2>Examples &rarr;</h2>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h2>Deploy &rarr;</h2>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
+        <Line
+        options={{
+          responsive: true,
+          plugins: {
+            legend: {
+              position: "top" as const,
+            },
+            title: {
+              display: true,
+              text: "Chart.js Bar Chart",
+            },
+          },
+        }}
+        data={{
+          labels: Object.keys(stats),
+          datasets: [
+            {
+              label: "avgSuccessTime",
+              data: Object.keys(stats).map((key) => median(stats[key].avgSuccessTimes)),
+            },
+          ],
+        }}
+      />
       </main>
 
       <footer className={styles.footer}>
@@ -77,25 +93,6 @@ const Home: NextPage<{ stats: any }> = ({stats}) => {
     </div>
   )
 }
-
-const average = (arr: number[]) => {
-  return arr.reduce((prev, curr) => prev + curr) / arr.length;
-};
-const median = (arr: number[]) => {
-  return arr.slice().sort((a, b) => a - b)[Math.floor(arr.length / 2)];
-};
-
-const movingAvg = (array: number[], countBefore: number, countAfter = 0) => {
-  const result = [];
-  for (let i = 0; i < array.length; i++) {
-    const subArr = array.slice(
-      Math.max(i - countBefore, 0),
-      Math.min(i + countAfter + 1, array.length)
-    );
-    result.push(median(subArr));
-  }
-  return result;
-};
 
 const fectchRuns = async () => {
   const octokit = new Octokit({
@@ -150,7 +147,7 @@ const sanitizeRuns = (runs: any) => {
       const createdAtTime = Date.parse(run.run_started_at);
       const updatedAtTime = Date.parse(run.updated_at);
       const durationMs = updatedAtTime - createdAtTime;
-      return durationMs / 1000;
+      return durationMs / 1000 / 60; // Minutes
     })
   });
 
@@ -160,9 +157,11 @@ const sanitizeRuns = (runs: any) => {
 export const getStaticProps = async () => {
   const runs = process.env.USE_MOCK_DATA === "true" ? mockData : fectchRuns()
 
+  const stats = sanitizeRuns(runs);
+
   return {
     props: {
-      stats: sanitizeRuns(runs)
+      stats
     },
   }
 }
