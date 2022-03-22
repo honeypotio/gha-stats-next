@@ -256,10 +256,12 @@ const loadMockData = async () => {
   return Array.from(data);
 };
 
+type Runs = ExtractPromiseType<ReturnType<typeof fectchRuns>>;
+
 export const getStaticProps = async () => {
   const runs =
     process.env.USE_MOCK_DATA === "true"
-      ? await loadMockData()
+      ? ((await loadMockData()) as Runs)
       : await fectchRuns();
 
   const stats = addCalculatedStats(

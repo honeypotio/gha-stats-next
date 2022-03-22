@@ -1,17 +1,34 @@
 import moment from "moment";
+import { fectchRuns } from "./github";
 
-export const groupByDay = (runs: any) => {
-  const statsPerDay: ObjectLiteral = {};
+type Runs = ExtractPromiseType<ReturnType<typeof fectchRuns>>;
 
-  runs.forEach((run: any) => {
+// interface Stats {
+//   [key: string]: {
+//     runs: Runs;
+//     total: number;
+//     conclusion: {
+//       success: number;
+//       failure: number;
+//       cancelled: number;
+//       startup_failure: number;
+//     };
+//     successTimes: number[];
+//   };
+// }
+
+export const groupByDay = (runs: Runs) => {
+  const stats: ObjectLiteral = {};
+
+  runs.forEach((run) => {
     if (run.status !== "completed") return;
     const day = moment(run.run_started_at).format("YYYY-MM-DD");
-    if (!statsPerDay[day]) statsPerDay[day] = { runs: [], total: 0 };
-    statsPerDay[day].runs.push(run);
-    statsPerDay[day].total++;
+    if (!stats[day]) stats[day] = { runs: [], total: 0 };
+    stats[day].runs.push(run);
+    stats[day].total++;
   });
 
-  return statsPerDay;
+  return stats;
 };
 
 export const addConclusionSum = (stats: ObjectLiteral) => {
