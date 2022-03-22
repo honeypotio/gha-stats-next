@@ -158,17 +158,17 @@ const fectchRuns = async () => {
   });
 
   const workflows = await octokit.rest.actions.listRepoWorkflows({
-    owner: process.env.GITHUB_ORG as string,
-    repo: process.env.GITHUB_REPO as string,
+    owner: process.env.REPO_ORG as string,
+    repo: process.env.REPO_NAME as string,
   });
 
   const workflowId = workflows.data.workflows.find(
-    (workflow) => workflow.name === process.env.GITHUB_WORKFLOW
+    (workflow) => workflow.name === process.env.REPO_WORKFLOW
   )?.id;
 
   return await octokit.paginate(octokit.actions.listWorkflowRuns, {
-    owner: process.env.GITHUB_ORG as string,
-    repo: process.env.GITHUB_REPO as string,
+    owner: process.env.REPO_ORG as string,
+    repo: process.env.REPO_NAME as string,
     workflow_id: workflowId as number,
     per_page: 100,
     event: "push",
@@ -263,10 +263,10 @@ export const getStaticProps = async () => {
   return {
     props: {
       stats,
-      org: process.env.GITHUB_ORG,
-      repo: process.env.GITHUB_REPO,
-      workflow: process.env.GITHUB_WORKFLOW,
-      branch: process.env.GITHUB_BRANCH,
+      org: process.env.REPO_ORG,
+      repo: process.env.REPO_NAME,
+      workflow: process.env.REPO_WORKFLOW,
+      branch: process.env.REPO_BRANCH,
     },
   }
 }
