@@ -216,7 +216,7 @@ const addCalculatedStats = (stats: any) => {
   Object.keys(stats).forEach((key) => {
     stats[key].avgSuccessTime = average(stats[key].successTimes)
     stats[key].medianSuccessTime = median(stats[key].successTimes)
-    stats[key].successRate = stats[key].conclusion.success / stats[key].total
+    stats[key].successRate = stats[key].conclusion.success / stats[key].total * 100
   })
 
   // These are not perfect as the moving stat is calculated based on the avg/median of the day
