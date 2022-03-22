@@ -15,11 +15,7 @@ import {
 
 import styles from "../styles/Home.module.css";
 import { average, median, movingStat } from "../src/utils/math";
-import {
-  groupByDay,
-  addConclusionSum,
-  addSuccessTimes,
-} from "../src/utils/stats";
+import { groupByDay, addCalculatedStats } from "../src/utils/stats";
 import { fectchRuns } from "../src/utils/github";
 
 ChartJS.register(
@@ -176,80 +172,6 @@ const Home: NextPage<{
   );
 };
 
-const addCalculatedStats = (stats: any) => {
-  Object.keys(stats).forEach((key) => {
-    stats[key].avgSuccessTime = average(stats[key].successTimes) || null;
-    stats[key].medianSuccessTime = median(stats[key].successTimes) || null;
-    stats[key].successRate =
-      (stats[key].conclusion.success / stats[key].total) * 100;
-  });
-
-  // These are not perfect as the moving stat is calculated based on the avg/median of the day
-  // It should rather take each value of the day, but because days have different count of values, keeping track of moving avg/median becomes complicated
-  const movingByDayAvgSuccessTime = {
-    seven: movingStat(
-      Object.keys(stats).map((key) => stats[key].avgSuccessTime),
-      7,
-      0,
-      average
-    ),
-    fourteen: movingStat(
-      Object.keys(stats).map((key) => stats[key].avgSuccessTime),
-      14,
-      0,
-      average
-    ),
-  };
-  const movingByDayMedianSuccessTime = {
-    seven: movingStat(
-      Object.keys(stats).map((key) => stats[key].medianSuccessTime),
-      7,
-      0,
-      median
-    ),
-    fourteen: movingStat(
-      Object.keys(stats).map((key) => stats[key].medianSuccessTime),
-      14,
-      0,
-      median
-    ),
-  };
-  const movingByDaySuccessRate = {
-    seven: movingStat(
-      Object.keys(stats).map((key) => stats[key].successRate),
-      7,
-      0,
-      average
-    ),
-    fourteen: movingStat(
-      Object.keys(stats).map((key) => stats[key].successRate),
-      14,
-      0,
-      average
-    ),
-  };
-  let index = 0;
-
-  Object.keys(stats).forEach((key) => {
-    stats[key].movingByDayAvgSuccessTime = {
-      seven: movingByDayAvgSuccessTime.seven[index],
-      fourteen: movingByDayAvgSuccessTime.fourteen[index],
-    };
-    stats[key].movingByDayMedianSuccessTime = {
-      seven: movingByDayMedianSuccessTime.seven[index],
-      fourteen: movingByDayMedianSuccessTime.fourteen[index],
-    };
-    stats[key].movingByDaySuccessRate = {
-      seven: movingByDaySuccessRate.seven[index],
-      fourteen: movingByDaySuccessRate.fourteen[index],
-    };
-
-    index++;
-  });
-
-  return stats;
-};
-
 const loadMockData = async () => {
   // Note that everything within data is loaded: https://stackoverflow.com/a/47956054/2771889
   const data = await import(`../data/${process.env.MOCK_DATA}`);
@@ -264,9 +186,7 @@ export const getStaticProps = async () => {
       ? ((await loadMockData()) as Runs)
       : await fectchRuns();
 
-  const stats = addCalculatedStats(
-    addSuccessTimes(addConclusionSum(groupByDay(runs)))
-  );
+  const stats = addCalculatedStats(groupByDay(runs));
 
   return {
     props: {
