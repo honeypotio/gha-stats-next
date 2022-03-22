@@ -47,55 +47,96 @@ const Home: NextPage<{ stats: any, org: string, repo: string, workflow: string, 
           <code className={styles.code}>{org}/{repo}{' '}{workflow}@{branch}</code>
         </p>
 
+        <p className={styles.description}>
+          CI runtime (seconds)
+        </p>
+
         <Line
-        options={{
-          responsive: true,
-          plugins: {
-            legend: {
-              position: "top" as const,
+          options={{
+            responsive: true,
+            plugins: {
+              legend: {
+                position: "top" as const,
+              },
+              title: {
+                display: true,
+              },
             },
-            title: {
-              display: true,
-              text: "CI runtime (seconds)",
+          }}
+          data={{
+            labels: Object.keys(stats),
+            datasets: [
+              {
+                label: "Median",
+                data: Object.keys(stats).map((key) => stats[key].medianSuccessTime),
+                borderColor: "#2cfc03"
+              },
+              {
+                label: "Average",
+                data: Object.keys(stats).map((key) => stats[key].avgSuccessTime),
+                borderColor: "#034efc"
+              },
+              {
+                label: "7-day moving average",
+                data: Object.keys(stats).map((key) => stats[key].movingByDayAvgSuccessTime.seven),
+                borderColor: "#fcba03"
+              },
+              {
+                label: "14-day moving average",
+                data: Object.keys(stats).map((key) => stats[key].movingByDayAvgSuccessTime.fourteen),
+                borderColor: "#face52"
+              },
+              {
+                label: "7-day moving median",
+                data: Object.keys(stats).map((key) => stats[key].movingByDayMedianSuccessTime.seven),
+                borderColor: "#d34ff7"
+              },
+              {
+                label: "14-day moving median",
+                data: Object.keys(stats).map((key) => stats[key].movingByDayMedianSuccessTime.fourteen),
+                borderColor: "#c603fc"
+              },
+            ],
+          }}
+        />
+
+        <p className={styles.description}>
+        CI success rate (%)
+        </p>
+
+        <Line
+          options={{
+            responsive: true,
+            plugins: {
+              legend: {
+                position: "top" as const,
+              },
+              title: {
+                display: true,
+              },
             },
-          },
-        }}
-        data={{
-          labels: Object.keys(stats),
-          datasets: [
-            {
-              label: "Median",
-              data: Object.keys(stats).map((key) => stats[key].medianSuccessTime),
-              borderColor: "#2cfc03"
-            },
-            {
-              label: "Average",
-              data: Object.keys(stats).map((key) => stats[key].avgSuccessTime),
-              borderColor: "#034efc"
-            },
-            {
-              label: "7-day moving average",
-              data: Object.keys(stats).map((key) => stats[key].movingByDayAvgSuccessTime.seven),
-              borderColor: "#fcba03"
-            },
-            {
-              label: "14-day moving average",
-              data: Object.keys(stats).map((key) => stats[key].movingByDayAvgSuccessTime.fourteen),
-              borderColor: "#face52"
-            },
-            {
-              label: "7-day moving median",
-              data: Object.keys(stats).map((key) => stats[key].movingByDayMedianSuccessTime.seven),
-              borderColor: "#d34ff7"
-            },
-            {
-              label: "14-day moving median",
-              data: Object.keys(stats).map((key) => stats[key].movingByDayMedianSuccessTime.fourteen),
-              borderColor: "#c603fc"
-            },
-          ],
-        }}
-      />
+          }}
+          data={{
+            labels: Object.keys(stats),
+            datasets: [
+              {
+                label: "Success rate",
+                data: Object.keys(stats).map((key) => stats[key].successRate),
+                borderColor: "#2cfc03"
+              },
+              {
+                label: "7-day moving Success rate",
+                data: Object.keys(stats).map((key) => stats[key].movingByDaySuccessRate.seven),
+                borderColor: "#fcba03"
+              },
+              {
+                label: "14-day moving Success rate",
+                data: Object.keys(stats).map((key) => stats[key].movingByDaySuccessRate.fourteen),
+                borderColor: "#face52"
+              },
+            ],
+          }}
+        />
       </main>
 
       <footer className={styles.footer}>
@@ -175,6 +216,7 @@ const addCalculatedStats = (stats: any) => {
   Object.keys(stats).forEach((key) => {
     stats[key].avgSuccessTime = average(stats[key].successTimes)
     stats[key].medianSuccessTime = median(stats[key].successTimes)
+    stats[key].successRate = stats[key].conclusion.success / stats[key].total
   })
 
   // These are not perfect as the moving stat is calculated based on the avg/median of the day
@@ -187,6 +229,10 @@ const addCalculatedStats = (stats: any) => {
     seven: movingStat(Object.keys(stats).map((key) => stats[key].medianSuccessTime), 7, 0, median),
     fourteen: movingStat(Object.keys(stats).map((key) => stats[key].medianSuccessTime), 14, 0, median)
   }
+  const movingByDaySuccessRate = {
+    seven: movingStat(Object.keys(stats).map((key) => stats[key].successRate), 7, 0, average),
+    fourteen: movingStat(Object.keys(stats).map((key) => stats[key].successRate), 14, 0, average)
+  }
   let index = 0;
 
   Object.keys(stats).forEach((key) => {
@@ -198,6 +244,11 @@ const addCalculatedStats = (stats: any) => {
       seven: movingByDayMedianSuccessTime.seven[index],
       fourteen: movingByDayMedianSuccessTime.fourteen[index]
     }
+    stats[key].movingByDaySuccessRate = {
+      seven: movingByDaySuccessRate.seven[index],
+      fourteen: movingByDaySuccessRate.fourteen[index]
+    }
+
     index++;
   })
 
