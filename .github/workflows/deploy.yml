@@ -21,11 +21,8 @@ jobs:
 
       - name: Build
         env:
-          REPO_ORG: ${{ secrets.REPO_ORG }}
-          REPO_NAME: ${{ secrets.REPO_NAME }}
-          REPO_WORKFLOW: ${{ secrets.REPO_WORKFLOW }}
-          REPO_BRANCH: ${{ secrets.REPO_BRANCH }}
           REPO_ACCESS_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
+          CONFIG: ${{ secrets.CONFIG }}
         run: yarn build
 
       - name: Deploy

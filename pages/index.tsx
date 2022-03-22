@@ -15,12 +15,8 @@ import SuccessRate from "../src/components/SuccessRate";
 import Runtime from "../src/components/Runtime";
 
 const Home: NextPage<{
-  runtimeStats: any;
-  successStats: any;
-  repoConfig: ObjectLiteral;
-}> = ({ runtimeStats, successStats, repoConfig }) => {
-  const { org, repo, workflow, branch } = repoConfig;
-
+  data: any[];
+}> = ({ data }) => {
   return (
     <div className={styles.container}>
       <Head>
@@ -33,9 +29,15 @@ const Home: NextPage<{
       </Head>
 
       <main className={styles.main}>
-        <RepoInfo org={org} repo={repo} workflow={workflow} branch={branch} />
-        <SuccessRate successStats={successStats} />
-        <Runtime runtimeStats={runtimeStats} />
+        {data.map((repoData, i) => {
+          return (
+            <div key={i}>
+              <RepoInfo repoConfig={repoData.repoConfig} />
+              <SuccessRate successStats={repoData.successStats} />
+              <Runtime runtimeStats={repoData.runtimeStats} />
+            </div>
+          );
+        })}
       </main>
 
       <footer className={styles.footer}>
@@ -60,31 +62,33 @@ const loadMockData = async () => {
 type Runs = ExtractPromiseType<ReturnType<typeof fectchRuns>>;
 
 export const getStaticProps = async () => {
-  const runs =
-    process.env.USE_MOCK_DATA === "true"
-      ? ((await loadMockData()) as Runs)
-      : await fectchRuns();
+  const data = await Promise.all(
+    JSON.parse(process.env.CONFIG as string).map(
+      async (configEntry: ConfigEntry) => {
+        const runs =
+          process.env.USE_MOCK_DATA === "true"
+            ? ((await loadMockData()) as Runs)
+            : await fectchRuns(configEntry);
+        const sanitizedStats = groupByDay(runs);
+        const successStats = removeRawRuns(
+          addCalculatedSuccessRateStats(deepClone(sanitizedStats))
+        );
+        const runtimeStats = removeRawRuns(
+          addCalculatedRuntimeStats(deepClone(sanitizedStats))
+        );
 
-  const sanitizedStats = groupByDay(runs);
-
-  const successStats = removeRawRuns(
-    addCalculatedSuccessRateStats(deepClone(sanitizedStats))
-  );
-
-  const runtimeStats = removeRawRuns(
-    addCalculatedRuntimeStats(deepClone(sanitizedStats))
+        return {
+          repoConfig: configEntry,
+          successStats,
+          runtimeStats,
+        };
+      }
+    )
   );
 
   return {
     props: {
-      runtimeStats,
-      successStats,
-      repoConfig: {
-        org: process.env.REPO_ORG,
-        repo: process.env.REPO_NAME,
-        workflow: process.env.REPO_WORKFLOW,
-        branch: process.env.REPO_BRANCH,
-      },
+      data,
     },
   };
 };

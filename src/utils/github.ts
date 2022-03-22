@@ -1,24 +1,27 @@
 import { Octokit } from "@octokit/rest";
 
-export const fectchRuns = async () => {
+export const fectchRuns = async (repoConfig: ConfigEntry) => {
   const octokit = new Octokit({
     auth: process.env.REPO_ACCESS_TOKEN,
   });
 
   const workflows = await octokit.rest.actions.listRepoWorkflows({
-    owner: process.env.REPO_ORG as string,
-    repo: process.env.REPO_NAME as string,
+    owner: repoConfig.org,
+    repo: repoConfig.repo,
   });
 
   const workflowId = workflows.data.workflows.find(
-    (workflow) => workflow.name === process.env.REPO_WORKFLOW
+    (workflow) => workflow.name === repoConfig.workflow
   )?.id;
 
+  if (!workflowId) throw "Workflow not found";
+
   return await octokit.paginate(octokit.actions.listWorkflowRuns, {
-    owner: process.env.REPO_ORG as string,
-    repo: process.env.REPO_NAME as string,
-    workflow_id: workflowId as number,
+    owner: repoConfig.org,
+    repo: repoConfig.repo,
+    workflow_id: workflowId,
     per_page: 100,
     event: "push",
+    branch: repoConfig.branch,
   });
 };

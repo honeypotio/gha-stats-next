@@ -3,15 +3,13 @@ import type { NextPage } from "next";
 import styles from "../../styles/Styles.module.css";
 
 const RepoInfo: NextPage<{
-  org: string;
-  repo: string;
-  workflow: string;
-  branch: string;
-}> = ({ org, repo, workflow, branch }) => {
+  repoConfig: ConfigEntry;
+}> = ({ repoConfig }) => {
   return (
     <h1 className={styles.title}>
       <code className={styles.code}>
-        {org}/{repo} {workflow}@{branch}
+        {repoConfig.org}/{repoConfig.repo} {repoConfig.workflow}@
+        {repoConfig.branch}
       </code>
     </h1>
   );
