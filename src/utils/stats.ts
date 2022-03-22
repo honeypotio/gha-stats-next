@@ -1,5 +1,6 @@
 import moment from "moment";
 import { fectchRuns } from "./github";
+import { filter } from "./js";
 import { average, median, movingStat } from "./math";
 
 type Runs = ExtractPromiseType<ReturnType<typeof fectchRuns>>;
@@ -59,14 +60,12 @@ const addSuccessRate = (stats: ObjectLiteral) => {
 
 const addSuccessTimes = (stats: ObjectLiteral) => {
   Object.keys(stats).forEach((key) => {
-    stats[key].successTimes = stats[key].runs
-      .filter((run: any) => run.conclusion === "success")
-      .map((run: any) => {
-        const createdAtTime = Date.parse(run.run_started_at);
-        const updatedAtTime = Date.parse(run.updated_at);
-        const durationMs = updatedAtTime - createdAtTime;
-        return durationMs / 1000;
-      });
+    stats[key].successTimes = stats[key].runs.map((run: any) => {
+      const createdAtTime = Date.parse(run.run_started_at);
+      const updatedAtTime = Date.parse(run.updated_at);
+      const durationMs = updatedAtTime - createdAtTime;
+      return durationMs / 1000;
+    });
   });
 
   return stats;
@@ -76,8 +75,6 @@ const addAverages = (stats: ObjectLiteral) => {
   Object.keys(stats).forEach((key) => {
     stats[key].avgSuccessTime = average(stats[key].successTimes) || null;
     stats[key].medianSuccessTime = median(stats[key].successTimes) || null;
-    stats[key].successRate =
-      (stats[key].conclusion.success / stats[key].total) * 100;
   });
 
   return stats;
@@ -85,7 +82,7 @@ const addAverages = (stats: ObjectLiteral) => {
 
 // These are not perfect as the moving stat is calculated based on the avg/median of the day
 // It should rather take each value of the day, but because days have different count of values, keeping track of moving avg/median becomes complicated
-const addMovingAverages = (stats: ObjectLiteral) => {
+const addMovingTimeStats = (stats: ObjectLiteral) => {
   const movingByDayAvgSuccessTime = {
     seven: movingStat(
       Object.keys(stats).map((key) => stats[key].avgSuccessTime),
@@ -114,20 +111,6 @@ const addMovingAverages = (stats: ObjectLiteral) => {
       median
     ),
   };
-  const movingByDaySuccessRate = {
-    seven: movingStat(
-      Object.keys(stats).map((key) => stats[key].successRate),
-      7,
-      0,
-      average
-    ),
-    fourteen: movingStat(
-      Object.keys(stats).map((key) => stats[key].successRate),
-      14,
-      0,
-      average
-    ),
-  };
   let index = 0;
 
   Object.keys(stats).forEach((key) => {
@@ -138,10 +121,6 @@ const addMovingAverages = (stats: ObjectLiteral) => {
     stats[key].movingByDayMedianSuccessTime = {
       seven: movingByDayMedianSuccessTime.seven[index],
       fourteen: movingByDayMedianSuccessTime.fourteen[index],
-    };
-    stats[key].movingByDaySuccessRate = {
-      seven: movingByDaySuccessRate.seven[index],
-      fourteen: movingByDaySuccessRate.fourteen[index],
     };
 
     index++;
@@ -183,9 +162,14 @@ export const addCalculatedSuccessRateStats = (stats: ObjectLiteral) => {
   return addMovingSuccessRateAverage(addSuccessRate(addConclusionSum(stats)));
 };
 
-export const addCalculatedStats = (stats: ObjectLiteral) => {
-  return addMovingAverages(
-    addAverages(addSuccessTimes(addConclusionSum(stats)))
+export const addCalculatedRuntimeStats = (stats: ObjectLiteral) => {
+  const predicate = (stat: ObjectLiteral) => {
+    return stat.runs.some((run: any) => run.conclusion === "success");
+  };
+  const statsWithSuccessfulRuns = filter(stats, predicate);
+
+  return addMovingTimeStats(
+    addAverages(addSuccessTimes(statsWithSuccessfulRuns))
   );
 };
 

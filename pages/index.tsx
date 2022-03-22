@@ -16,11 +16,12 @@ import {
 import styles from "../styles/Home.module.css";
 import {
   groupByDay,
-  addCalculatedStats,
   removeRawRuns,
   addCalculatedSuccessRateStats,
+  addCalculatedRuntimeStats,
 } from "../src/utils/stats";
 import { fectchRuns } from "../src/utils/github";
+import { deepClone } from "../src/utils/js";
 
 ChartJS.register(
   CategoryScale,
@@ -33,15 +34,16 @@ ChartJS.register(
 );
 
 const Home: NextPage<{
-  stats: any;
+  runtimeStats: any;
   successStats: any;
   org: string;
   repo: string;
   workflow: string;
   branch: string;
-}> = ({ stats, successStats, org, repo, workflow, branch }) => {
+}> = ({ runtimeStats, successStats, org, repo, workflow, branch }) => {
   useEffect(() => {
     console.log(successStats);
+    console.log(runtimeStats);
   });
   return (
     <div className={styles.container}>
@@ -110,49 +112,58 @@ const Home: NextPage<{
             },
           }}
           data={{
-            labels: Object.keys(stats).sort(),
+            labels: Object.keys(runtimeStats).sort(),
             datasets: [
               {
                 label: "Median",
-                data: Object.keys(stats)
+                data: Object.keys(runtimeStats)
                   .sort()
-                  .map((key) => stats[key].medianSuccessTime),
+                  .map((key) => runtimeStats[key].medianSuccessTime),
                 borderColor: "#2cfc03",
               },
               {
                 label: "Average",
-                data: Object.keys(stats)
+                data: Object.keys(runtimeStats)
                   .sort()
-                  .map((key) => stats[key].avgSuccessTime),
+                  .map((key) => runtimeStats[key].avgSuccessTime),
                 borderColor: "#034efc",
               },
               {
                 label: "7-day moving average",
-                data: Object.keys(stats)
+                data: Object.keys(runtimeStats)
                   .sort()
-                  .map((key) => stats[key].movingByDayAvgSuccessTime.seven),
+                  .map(
+                    (key) => runtimeStats[key].movingByDayAvgSuccessTime.seven
+                  ),
                 borderColor: "#fcba03",
               },
               {
                 label: "14-day moving average",
-                data: Object.keys(stats)
+                data: Object.keys(runtimeStats)
                   .sort()
-                  .map((key) => stats[key].movingByDayAvgSuccessTime.fourteen),
+                  .map(
+                    (key) =>
+                      runtimeStats[key].movingByDayAvgSuccessTime.fourteen
+                  ),
                 borderColor: "#face52",
               },
               {
                 label: "7-day moving median",
-                data: Object.keys(stats)
+                data: Object.keys(runtimeStats)
                   .sort()
-                  .map((key) => stats[key].movingByDayMedianSuccessTime.seven),
+                  .map(
+                    (key) =>
+                      runtimeStats[key].movingByDayMedianSuccessTime.seven
+                  ),
                 borderColor: "#d34ff7",
               },
               {
                 label: "14-day moving median",
-                data: Object.keys(stats)
+                data: Object.keys(runtimeStats)
                   .sort()
                   .map(
-                    (key) => stats[key].movingByDayMedianSuccessTime.fourteen
+                    (key) =>
+                      runtimeStats[key].movingByDayMedianSuccessTime.fourteen
                   ),
                 borderColor: "#c603fc",
               },
@@ -191,14 +202,16 @@ export const getStaticProps = async () => {
   const sanitizedStats = groupByDay(runs);
 
   const successStats = removeRawRuns(
-    addCalculatedSuccessRateStats(sanitizedStats)
+    addCalculatedSuccessRateStats(deepClone(sanitizedStats))
   );
 
-  const stats = removeRawRuns(addCalculatedStats(groupByDay(runs)));
+  const runtimeStats = removeRawRuns(
+    addCalculatedRuntimeStats(deepClone(sanitizedStats))
+  );
 
   return {
     props: {
-      stats,
+      runtimeStats,
       successStats,
       org: process.env.REPO_ORG,
       repo: process.env.REPO_NAME,
