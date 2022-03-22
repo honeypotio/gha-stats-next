@@ -14,11 +14,11 @@ import {
 } from "chart.js";
 
 import styles from "../styles/Home.module.css";
-import { average, median, movingStat } from "../src/utils/math";
 import {
   groupByDay,
   addCalculatedStats,
   removeRawRuns,
+  addCalculatedSuccessRateStats,
 } from "../src/utils/stats";
 import { fectchRuns } from "../src/utils/github";
 
@@ -34,13 +34,14 @@ ChartJS.register(
 
 const Home: NextPage<{
   stats: any;
+  successStats: any;
   org: string;
   repo: string;
   workflow: string;
   branch: string;
-}> = ({ stats, org, repo, workflow, branch }) => {
+}> = ({ stats, successStats, org, repo, workflow, branch }) => {
   useEffect(() => {
-    console.log(stats);
+    console.log(successStats);
   });
   return (
     <div className={styles.container}>
@@ -58,6 +59,41 @@ const Home: NextPage<{
             {org}/{repo} {workflow}@{branch}
           </code>
         </p>
+
+        <p className={styles.description}>CI success rate (%)</p>
+
+        <Line
+          options={{
+            responsive: true,
+            plugins: {
+              legend: {
+                position: "top" as const,
+              },
+              title: {
+                display: true,
+              },
+            },
+          }}
+          data={{
+            labels: Object.keys(successStats).sort(),
+            datasets: [
+              {
+                label: "Daily success rate",
+                data: Object.keys(successStats)
+                  .sort()
+                  .map((key) => successStats[key].successRate),
+                borderColor: "#c9e3c5",
+              },
+              {
+                label: "7-day moving success rate",
+                data: Object.keys(successStats)
+                  .sort()
+                  .map((key) => successStats[key].movingByDaySuccessRate.seven),
+                borderColor: "#33a122",
+              },
+            ],
+          }}
+        />
 
         <p className={styles.description}>CI runtime (seconds)</p>
 
@@ -123,48 +159,6 @@ const Home: NextPage<{
             ],
           }}
         />
-
-        <p className={styles.description}>CI success rate (%)</p>
-
-        <Line
-          options={{
-            responsive: true,
-            plugins: {
-              legend: {
-                position: "top" as const,
-              },
-              title: {
-                display: true,
-              },
-            },
-          }}
-          data={{
-            labels: Object.keys(stats).sort(),
-            datasets: [
-              {
-                label: "Success rate",
-                data: Object.keys(stats)
-                  .sort()
-                  .map((key) => stats[key].successRate),
-                borderColor: "#2cfc03",
-              },
-              {
-                label: "7-day moving success rate",
-                data: Object.keys(stats)
-                  .sort()
-                  .map((key) => stats[key].movingByDaySuccessRate.seven),
-                borderColor: "#fcba03",
-              },
-              {
-                label: "14-day moving success rate",
-                data: Object.keys(stats)
-                  .sort()
-                  .map((key) => stats[key].movingByDaySuccessRate.fourteen),
-                borderColor: "#face52",
-              },
-            ],
-          }}
-        />
       </main>
 
       <footer className={styles.footer}>
@@ -194,11 +188,18 @@ export const getStaticProps = async () => {
       ? ((await loadMockData()) as Runs)
       : await fectchRuns();
 
+  const sanitizedStats = groupByDay(runs);
+
+  const successStats = removeRawRuns(
+    addCalculatedSuccessRateStats(sanitizedStats)
+  );
+
   const stats = removeRawRuns(addCalculatedStats(groupByDay(runs)));
 
   return {
     props: {
       stats,
+      successStats,
       org: process.env.REPO_ORG,
       repo: process.env.REPO_NAME,
       workflow: process.env.REPO_WORKFLOW,

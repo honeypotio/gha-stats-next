@@ -48,6 +48,15 @@ const addConclusionSum = (stats: ObjectLiteral) => {
   return stats;
 };
 
+const addSuccessRate = (stats: ObjectLiteral) => {
+  Object.keys(stats).forEach((key) => {
+    stats[key].successRate =
+      (stats[key].conclusion.success / stats[key].total) * 100;
+  });
+
+  return stats;
+};
+
 const addSuccessTimes = (stats: ObjectLiteral) => {
   Object.keys(stats).forEach((key) => {
     stats[key].successTimes = stats[key].runs
@@ -74,9 +83,9 @@ const addAverages = (stats: ObjectLiteral) => {
   return stats;
 };
 
+// These are not perfect as the moving stat is calculated based on the avg/median of the day
+// It should rather take each value of the day, but because days have different count of values, keeping track of moving avg/median becomes complicated
 const addMovingAverages = (stats: ObjectLiteral) => {
-  // These are not perfect as the moving stat is calculated based on the avg/median of the day
-  // It should rather take each value of the day, but because days have different count of values, keeping track of moving avg/median becomes complicated
   const movingByDayAvgSuccessTime = {
     seven: movingStat(
       Object.keys(stats).map((key) => stats[key].avgSuccessTime),
@@ -139,6 +148,39 @@ const addMovingAverages = (stats: ObjectLiteral) => {
   });
 
   return stats;
+};
+
+const addMovingSuccessRateAverage = (stats: ObjectLiteral) => {
+  const movingByDaySuccessRate = {
+    seven: movingStat(
+      Object.keys(stats).map((key) => stats[key].successRate),
+      7,
+      0,
+      average
+    ),
+    fourteen: movingStat(
+      Object.keys(stats).map((key) => stats[key].successRate),
+      14,
+      0,
+      average
+    ),
+  };
+  let index = 0;
+
+  Object.keys(stats).forEach((key) => {
+    stats[key].movingByDaySuccessRate = {
+      seven: movingByDaySuccessRate.seven[index],
+      fourteen: movingByDaySuccessRate.fourteen[index],
+    };
+
+    index++;
+  });
+
+  return stats;
+};
+
+export const addCalculatedSuccessRateStats = (stats: ObjectLiteral) => {
+  return addMovingSuccessRateAverage(addSuccessRate(addConclusionSum(stats)));
 };
 
 export const addCalculatedStats = (stats: ObjectLiteral) => {
