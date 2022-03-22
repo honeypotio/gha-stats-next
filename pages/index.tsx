@@ -30,10 +30,6 @@ ChartJS.register(
 );
 
 const Home: NextPage<{ stats: any, org: string, repo: string, workflow: string, branch: string }> = ({stats, org, repo, workflow, branch}) => {
-  useEffect(() => {
-    console.log(stats)
-  }, []);
-
   return (
     <div className={styles.container}>
       <Head>
@@ -145,7 +141,7 @@ interface ObjectLiteral {
 const sanitizeRuns = (runs: any) => {
   const statsPerDay: ObjectLiteral = {};
 
-  runs.forEach((run) => {
+  runs.forEach((run: any) => {
     const day = moment(run.run_started_at).format("YYYY-MM-DD");
     if (!statsPerDay[day]) statsPerDay[day] = { runs: [], total: 0 };
     statsPerDay[day].runs.push(run);
@@ -175,7 +171,7 @@ const sanitizeRuns = (runs: any) => {
   return statsPerDay
 }
 
-const addCalculatedStats = (stats) => {
+const addCalculatedStats = (stats: any) => {
   Object.keys(stats).forEach((key) => {
     stats[key].avgSuccessTime = average(stats[key].successTimes)
     stats[key].medianSuccessTime = median(stats[key].successTimes)
@@ -209,7 +205,7 @@ const addCalculatedStats = (stats) => {
 }
 
 export const getStaticProps = async () => {
-  const runs = process.env.USE_MOCK_DATA === "true" ? mockData : fectchRuns()
+  const runs = process.env.USE_MOCK_DATA === "true" ? mockData : await fectchRuns()
 
   const stats = addCalculatedStats(sanitizeRuns(runs));
 
