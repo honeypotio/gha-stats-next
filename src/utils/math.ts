@@ -1,12 +1,14 @@
 export const average = (arr: number[]) => {
-  if (arr.length === 0) return arr;
-  return arr.reduce((prev, curr) => prev + curr) / arr.length;
+  const flatArr = arr.flat();
+  return flatArr.reduce((prev, curr) => prev + curr) / flatArr.length;
 };
 
 export const median = (arr: number[]) => {
-  return arr.slice().sort((a, b) => a - b)[Math.floor(arr.length / 2)];
+  const flatArr = arr.flat();
+  return flatArr.slice().sort((a, b) => a - b)[Math.floor(flatArr.length / 2)];
 };
 
+// Calculates moving statistic over `array`, e.g. moving average using `statFunc`
 export const movingStat = (
   array: number[],
   countBefore: number,
