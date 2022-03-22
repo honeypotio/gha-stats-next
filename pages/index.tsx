@@ -74,48 +74,50 @@ const Home: NextPage<{
             },
           }}
           data={{
-            labels: Object.keys(stats),
+            labels: Object.keys(stats).sort(),
             datasets: [
               {
                 label: "Median",
-                data: Object.keys(stats).map(
-                  (key) => stats[key].medianSuccessTime
-                ),
+                data: Object.keys(stats)
+                  .sort()
+                  .map((key) => stats[key].medianSuccessTime),
                 borderColor: "#2cfc03",
               },
               {
                 label: "Average",
-                data: Object.keys(stats).map(
-                  (key) => stats[key].avgSuccessTime
-                ),
+                data: Object.keys(stats)
+                  .sort()
+                  .map((key) => stats[key].avgSuccessTime),
                 borderColor: "#034efc",
               },
               {
                 label: "7-day moving average",
-                data: Object.keys(stats).map(
-                  (key) => stats[key].movingByDayAvgSuccessTime.seven
-                ),
+                data: Object.keys(stats)
+                  .sort()
+                  .map((key) => stats[key].movingByDayAvgSuccessTime.seven),
                 borderColor: "#fcba03",
               },
               {
                 label: "14-day moving average",
-                data: Object.keys(stats).map(
-                  (key) => stats[key].movingByDayAvgSuccessTime.fourteen
-                ),
+                data: Object.keys(stats)
+                  .sort()
+                  .map((key) => stats[key].movingByDayAvgSuccessTime.fourteen),
                 borderColor: "#face52",
               },
               {
                 label: "7-day moving median",
-                data: Object.keys(stats).map(
-                  (key) => stats[key].movingByDayMedianSuccessTime.seven
-                ),
+                data: Object.keys(stats)
+                  .sort()
+                  .map((key) => stats[key].movingByDayMedianSuccessTime.seven),
                 borderColor: "#d34ff7",
               },
               {
                 label: "14-day moving median",
-                data: Object.keys(stats).map(
-                  (key) => stats[key].movingByDayMedianSuccessTime.fourteen
-                ),
+                data: Object.keys(stats)
+                  .sort()
+                  .map(
+                    (key) => stats[key].movingByDayMedianSuccessTime.fourteen
+                  ),
                 borderColor: "#c603fc",
               },
             ],
@@ -137,25 +139,27 @@ const Home: NextPage<{
             },
           }}
           data={{
-            labels: Object.keys(stats),
+            labels: Object.keys(stats).sort(),
             datasets: [
               {
                 label: "Success rate",
-                data: Object.keys(stats).map((key) => stats[key].successRate),
+                data: Object.keys(stats)
+                  .sort()
+                  .map((key) => stats[key].successRate),
                 borderColor: "#2cfc03",
               },
               {
                 label: "7-day moving success rate",
-                data: Object.keys(stats).map(
-                  (key) => stats[key].movingByDaySuccessRate.seven
-                ),
+                data: Object.keys(stats)
+                  .sort()
+                  .map((key) => stats[key].movingByDaySuccessRate.seven),
                 borderColor: "#fcba03",
               },
               {
                 label: "14-day moving success rate",
-                data: Object.keys(stats).map(
-                  (key) => stats[key].movingByDaySuccessRate.fourteen
-                ),
+                data: Object.keys(stats)
+                  .sort()
+                  .map((key) => stats[key].movingByDaySuccessRate.fourteen),
                 borderColor: "#face52",
               },
             ],
