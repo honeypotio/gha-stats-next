@@ -192,10 +192,6 @@ const fectchRuns = async () => {
   });
 };
 
-interface ObjectLiteral {
-  [key: string]: any;
-}
-
 const sanitizeRuns = (runs: any) => {
   const statsPerDay: ObjectLiteral = {};
 
