@@ -113,7 +113,7 @@ const Home: NextPage<{
             labels: Object.keys(runtimeStats).sort(),
             datasets: [
               {
-                label: "Average",
+                label: "Daily average",
                 data: Object.keys(runtimeStats)
                   .sort()
                   .map((key) => runtimeStats[key].avgSuccessTime),
