@@ -15,7 +15,11 @@ import {
 
 import styles from "../styles/Home.module.css";
 import { average, median, movingStat } from "../src/utils/math";
-import { groupByDay, addCalculatedStats } from "../src/utils/stats";
+import {
+  groupByDay,
+  addCalculatedStats,
+  removeRawRuns,
+} from "../src/utils/stats";
 import { fectchRuns } from "../src/utils/github";
 
 ChartJS.register(
@@ -186,7 +190,7 @@ export const getStaticProps = async () => {
       ? ((await loadMockData()) as Runs)
       : await fectchRuns();
 
-  const stats = addCalculatedStats(groupByDay(runs));
+  const stats = removeRawRuns(addCalculatedStats(groupByDay(runs)));
 
   return {
     props: {

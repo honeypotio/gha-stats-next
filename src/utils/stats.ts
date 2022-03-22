@@ -75,13 +75,6 @@ const addAverages = (stats: ObjectLiteral) => {
 };
 
 const addMovingAverages = (stats: ObjectLiteral) => {
-  Object.keys(stats).forEach((key) => {
-    stats[key].avgSuccessTime = average(stats[key].successTimes) || null;
-    stats[key].medianSuccessTime = median(stats[key].successTimes) || null;
-    stats[key].successRate =
-      (stats[key].conclusion.success / stats[key].total) * 100;
-  });
-
   // These are not perfect as the moving stat is calculated based on the avg/median of the day
   // It should rather take each value of the day, but because days have different count of values, keeping track of moving avg/median becomes complicated
   const movingByDayAvgSuccessTime = {
@@ -152,4 +145,15 @@ export const addCalculatedStats = (stats: ObjectLiteral) => {
   return addMovingAverages(
     addAverages(addSuccessTimes(addConclusionSum(stats)))
   );
+};
+
+export const removeRawRuns = (stats: ObjectLiteral) => {
+  const thinStats: ObjectLiteral = {};
+
+  Object.keys(stats).forEach((key) => {
+    const { runs, ...keptAttributes } = stats[key];
+    thinStats[key] = keptAttributes;
+  });
+
+  return thinStats;
 };
