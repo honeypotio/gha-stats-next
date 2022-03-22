@@ -34,48 +34,56 @@ export const groupByDay = (runs: Runs) => {
 };
 
 const addConclusionSum = (stats: ObjectLiteral) => {
-  Object.keys(stats).forEach((key) => {
-    stats[key].conclusion = {
-      success: 0,
-      failure: 0,
-      cancelled: 0,
-      startup_failure: 0,
-    };
-    stats[key].runs.forEach((run: any) => {
-      stats[key].conclusion[run.conclusion] += 1;
+  Object.keys(stats)
+    .sort()
+    .forEach((key) => {
+      stats[key].conclusion = {
+        success: 0,
+        failure: 0,
+        cancelled: 0,
+        startup_failure: 0,
+      };
+      stats[key].runs.forEach((run: any) => {
+        stats[key].conclusion[run.conclusion] += 1;
+      });
     });
-  });
 
   return stats;
 };
 
 const addSuccessRate = (stats: ObjectLiteral) => {
-  Object.keys(stats).forEach((key) => {
-    stats[key].successRate =
-      (stats[key].conclusion.success / stats[key].total) * 100;
-  });
+  Object.keys(stats)
+    .sort()
+    .forEach((key) => {
+      stats[key].successRate =
+        (stats[key].conclusion.success / stats[key].total) * 100;
+    });
 
   return stats;
 };
 
 const addSuccessTimes = (stats: ObjectLiteral) => {
-  Object.keys(stats).forEach((key) => {
-    stats[key].successTimes = stats[key].runs.map((run: any) => {
-      const createdAtTime = Date.parse(run.run_started_at);
-      const updatedAtTime = Date.parse(run.updated_at);
-      const durationMs = updatedAtTime - createdAtTime;
-      return durationMs / 1000;
+  Object.keys(stats)
+    .sort()
+    .forEach((key) => {
+      stats[key].successTimes = stats[key].runs.map((run: any) => {
+        const createdAtTime = Date.parse(run.run_started_at);
+        const updatedAtTime = Date.parse(run.updated_at);
+        const durationMs = updatedAtTime - createdAtTime;
+        return durationMs / 1000;
+      });
     });
-  });
 
   return stats;
 };
 
 const addAverages = (stats: ObjectLiteral) => {
-  Object.keys(stats).forEach((key) => {
-    stats[key].avgSuccessTime = average(stats[key].successTimes);
-    stats[key].medianSuccessTime = median(stats[key].successTimes);
-  });
+  Object.keys(stats)
+    .sort()
+    .forEach((key) => {
+      stats[key].avgSuccessTime = average(stats[key].successTimes);
+      stats[key].medianSuccessTime = median(stats[key].successTimes);
+    });
 
   return stats;
 };
@@ -85,7 +93,9 @@ const addAverages = (stats: ObjectLiteral) => {
 const addMovingTimeStats = (stats: ObjectLiteral) => {
   const movingByDayAvgSuccessTime = {
     seven: movingStat(
-      Object.keys(stats).map((key) => stats[key].successTimes),
+      Object.keys(stats)
+        .sort()
+        .map((key) => stats[key].successTimes),
       7,
       0,
       average
@@ -93,7 +103,9 @@ const addMovingTimeStats = (stats: ObjectLiteral) => {
   };
   const movingByDayMedianSuccessTime = {
     seven: movingStat(
-      Object.keys(stats).map((key) => stats[key].successTimes),
+      Object.keys(stats)
+        .sort()
+        .map((key) => stats[key].successTimes),
       7,
       0,
       median
@@ -101,16 +113,18 @@ const addMovingTimeStats = (stats: ObjectLiteral) => {
   };
   let index = 0;
 
-  Object.keys(stats).forEach((key) => {
-    stats[key].movingByDayAvgSuccessTime = {
-      seven: movingByDayAvgSuccessTime.seven[index],
-    };
-    stats[key].movingByDayMedianSuccessTime = {
-      seven: movingByDayMedianSuccessTime.seven[index],
-    };
+  Object.keys(stats)
+    .sort()
+    .forEach((key) => {
+      stats[key].movingByDayAvgSuccessTime = {
+        seven: movingByDayAvgSuccessTime.seven[index],
+      };
+      stats[key].movingByDayMedianSuccessTime = {
+        seven: movingByDayMedianSuccessTime.seven[index],
+      };
 
-    index++;
-  });
+      index++;
+    });
 
   return stats;
 };
@@ -118,7 +132,9 @@ const addMovingTimeStats = (stats: ObjectLiteral) => {
 const addMovingSuccessRateAverage = (stats: ObjectLiteral) => {
   const movingByDaySuccessRate = {
     seven: movingStat(
-      Object.keys(stats).map((key) => stats[key].successRate),
+      Object.keys(stats)
+        .sort()
+        .map((key) => stats[key].successRate),
       7,
       0,
       average
@@ -126,13 +142,15 @@ const addMovingSuccessRateAverage = (stats: ObjectLiteral) => {
   };
   let index = 0;
 
-  Object.keys(stats).forEach((key) => {
-    stats[key].movingByDaySuccessRate = {
-      seven: movingByDaySuccessRate.seven[index],
-    };
+  Object.keys(stats)
+    .sort()
+    .forEach((key) => {
+      stats[key].movingByDaySuccessRate = {
+        seven: movingByDaySuccessRate.seven[index],
+      };
 
-    index++;
-  });
+      index++;
+    });
 
   return stats;
 };
@@ -155,10 +173,12 @@ export const addCalculatedRuntimeStats = (stats: ObjectLiteral) => {
 export const removeRawRuns = (stats: ObjectLiteral) => {
   const thinStats: ObjectLiteral = {};
 
-  Object.keys(stats).forEach((key) => {
-    const { runs, ...keptAttributes } = stats[key];
-    thinStats[key] = keptAttributes;
-  });
+  Object.keys(stats)
+    .sort()
+    .forEach((key) => {
+      const { runs, ...keptAttributes } = stats[key];
+      thinStats[key] = keptAttributes;
+    });
 
   return thinStats;
 };
