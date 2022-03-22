@@ -85,7 +85,7 @@ const addAverages = (stats: ObjectLiteral) => {
 const addMovingTimeStats = (stats: ObjectLiteral) => {
   const movingByDayAvgSuccessTime = {
     seven: movingStat(
-      Object.keys(stats).map((key) => stats[key].avgSuccessTime),
+      Object.keys(stats).map((key) => stats[key].successTimes),
       7,
       0,
       average
@@ -93,7 +93,7 @@ const addMovingTimeStats = (stats: ObjectLiteral) => {
   };
   const movingByDayMedianSuccessTime = {
     seven: movingStat(
-      Object.keys(stats).map((key) => stats[key].medianSuccessTime),
+      Object.keys(stats).map((key) => stats[key].successTimes),
       7,
       0,
       median
