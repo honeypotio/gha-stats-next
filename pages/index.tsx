@@ -62,7 +62,7 @@ const Home: NextPage<{
           </code>
         </p>
 
-        <p className={styles.description}>CI success rate (%)</p>
+        <p className={styles.description}>CI success rate (%) ↗</p>
 
         <Line
           options={{
@@ -97,7 +97,7 @@ const Home: NextPage<{
           }}
         />
 
-        <p className={styles.description}>CI runtime (seconds)</p>
+        <p className={styles.description}>CI runtime (seconds) ↘</p>
 
         <Line
           options={{
@@ -115,18 +115,11 @@ const Home: NextPage<{
             labels: Object.keys(runtimeStats).sort(),
             datasets: [
               {
-                label: "Median",
-                data: Object.keys(runtimeStats)
-                  .sort()
-                  .map((key) => runtimeStats[key].medianSuccessTime),
-                borderColor: "#2cfc03",
-              },
-              {
                 label: "Average",
                 data: Object.keys(runtimeStats)
                   .sort()
                   .map((key) => runtimeStats[key].avgSuccessTime),
-                borderColor: "#034efc",
+                borderColor: "#c7d3f0",
               },
               {
                 label: "7-day moving average",
@@ -135,37 +128,7 @@ const Home: NextPage<{
                   .map(
                     (key) => runtimeStats[key].movingByDayAvgSuccessTime.seven
                   ),
-                borderColor: "#fcba03",
-              },
-              {
-                label: "14-day moving average",
-                data: Object.keys(runtimeStats)
-                  .sort()
-                  .map(
-                    (key) =>
-                      runtimeStats[key].movingByDayAvgSuccessTime.fourteen
-                  ),
-                borderColor: "#face52",
-              },
-              {
-                label: "7-day moving median",
-                data: Object.keys(runtimeStats)
-                  .sort()
-                  .map(
-                    (key) =>
-                      runtimeStats[key].movingByDayMedianSuccessTime.seven
-                  ),
-                borderColor: "#d34ff7",
-              },
-              {
-                label: "14-day moving median",
-                data: Object.keys(runtimeStats)
-                  .sort()
-                  .map(
-                    (key) =>
-                      runtimeStats[key].movingByDayMedianSuccessTime.fourteen
-                  ),
-                borderColor: "#c603fc",
+                borderColor: "#034efc",
               },
             ],
           }}
