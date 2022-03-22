@@ -215,12 +215,14 @@ const sanitizeRuns = (runs: any) => {
       statsPerDay[key].conclusion[run.conclusion] += 1;
     });
 
-    statsPerDay[key].successTimes = statsPerDay[key].runs.map((run: any) => {
-      const createdAtTime = Date.parse(run.run_started_at);
-      const updatedAtTime = Date.parse(run.updated_at);
-      const durationMs = updatedAtTime - createdAtTime;
-      return durationMs / 1000;
-    });
+    statsPerDay[key].successTimes = statsPerDay[key].runs
+      .filter((run: any) => run.conclusion === "success")
+      .map((run: any) => {
+        const createdAtTime = Date.parse(run.run_started_at);
+        const updatedAtTime = Date.parse(run.updated_at);
+        const durationMs = updatedAtTime - createdAtTime;
+        return durationMs / 1000;
+      });
   });
 
   return statsPerDay;
@@ -228,8 +230,8 @@ const sanitizeRuns = (runs: any) => {
 
 const addCalculatedStats = (stats: any) => {
   Object.keys(stats).forEach((key) => {
-    stats[key].avgSuccessTime = average(stats[key].successTimes);
-    stats[key].medianSuccessTime = median(stats[key].successTimes);
+    stats[key].avgSuccessTime = average(stats[key].successTimes) || null;
+    stats[key].medianSuccessTime = median(stats[key].successTimes) || null;
     stats[key].successRate =
       (stats[key].conclusion.success / stats[key].total) * 100;
   });
