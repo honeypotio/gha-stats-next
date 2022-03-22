@@ -15,7 +15,6 @@ import {
   Legend,
 } from "chart.js";
 
-import mockData from '../mock-data.json';
 import styles from '../styles/Home.module.css'
 import { average, median, movingStat } from '../src/utils/math';
 
@@ -255,8 +254,14 @@ const addCalculatedStats = (stats: any) => {
   return stats
 }
 
+const loadMockData = async () => {
+  // Note that everything within data is loaded: https://stackoverflow.com/a/47956054/2771889
+  const data = await import(`../data/${process.env.MOCK_DATA}`)
+  return Array.from(data)
+}
+
 export const getStaticProps = async () => {
-  const runs = process.env.USE_MOCK_DATA === "true" ? mockData : await fectchRuns()
+  const runs = process.env.USE_MOCK_DATA === "true" ? await loadMockData() : await fectchRuns()
 
   const stats = addCalculatedStats(sanitizeRuns(runs));
 
