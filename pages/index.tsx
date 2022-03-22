@@ -79,7 +79,7 @@ const Home: NextPage<{
                 borderColor: "#c9e3c5",
               },
               {
-                label: "7-day moving success rate",
+                label: "7-point moving success rate",
                 data: Object.keys(successStats)
                   .sort()
                   .map((key) => successStats[key].movingByDaySuccessRate.seven),
@@ -114,7 +114,7 @@ const Home: NextPage<{
                 borderColor: "#c7d3f0",
               },
               {
-                label: "7-day moving average",
+                label: "7-point moving average",
                 data: Object.keys(runtimeStats)
                   .sort()
                   .map(
