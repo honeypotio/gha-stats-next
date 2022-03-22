@@ -73,8 +73,8 @@ const addSuccessTimes = (stats: ObjectLiteral) => {
 
 const addAverages = (stats: ObjectLiteral) => {
   Object.keys(stats).forEach((key) => {
-    stats[key].avgSuccessTime = average(stats[key].successTimes) || null;
-    stats[key].medianSuccessTime = median(stats[key].successTimes) || null;
+    stats[key].avgSuccessTime = average(stats[key].successTimes);
+    stats[key].medianSuccessTime = median(stats[key].successTimes);
   });
 
   return stats;
