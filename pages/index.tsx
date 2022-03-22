@@ -125,12 +125,12 @@ const Home: NextPage<{ stats: any, org: string, repo: string, workflow: string, 
                 borderColor: "#2cfc03"
               },
               {
-                label: "7-day moving Success rate",
+                label: "7-day moving success rate",
                 data: Object.keys(stats).map((key) => stats[key].movingByDaySuccessRate.seven),
                 borderColor: "#fcba03"
               },
               {
-                label: "14-day moving Success rate",
+                label: "14-day moving success rate",
                 data: Object.keys(stats).map((key) => stats[key].movingByDaySuccessRate.fourteen),
                 borderColor: "#face52"
               },
