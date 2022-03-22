@@ -113,7 +113,7 @@ const Home: NextPage<{ stats: any, org: string, repo: string, workflow: string, 
 
 const fectchRuns = async () => {
   const octokit = new Octokit({
-    auth: process.env.GITHUB_TOKEN,
+    auth: process.env.REPO_ACCESS_TOKEN,
   });
 
   const workflows = await octokit.rest.actions.listRepoWorkflows({
