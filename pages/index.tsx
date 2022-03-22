@@ -2,7 +2,7 @@ import type { NextPage } from "next";
 import { useEffect } from "react";
 import Head from "next/head";
 import { Octokit } from "@octokit/rest";
-import moment from "moment";
+
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -17,6 +17,11 @@ import {
 
 import styles from "../styles/Home.module.css";
 import { average, median, movingStat } from "../src/utils/math";
+import {
+  groupByDay,
+  addConclusionSum,
+  addSuccessTimes,
+} from "../src/utils/stats";
 
 ChartJS.register(
   CategoryScale,
@@ -35,6 +40,9 @@ const Home: NextPage<{
   workflow: string;
   branch: string;
 }> = ({ stats, org, repo, workflow, branch }) => {
+  useEffect(() => {
+    console.log(stats);
+  });
   return (
     <div className={styles.container}>
       <Head>
@@ -192,42 +200,6 @@ const fectchRuns = async () => {
   });
 };
 
-const sanitizeRuns = (runs: any) => {
-  const statsPerDay: ObjectLiteral = {};
-
-  runs.forEach((run: any) => {
-    if (run.status !== "completed") return;
-    const day = moment(run.run_started_at).format("YYYY-MM-DD");
-    if (!statsPerDay[day]) statsPerDay[day] = { runs: [], total: 0 };
-    statsPerDay[day].runs.push(run);
-  });
-
-  Object.keys(statsPerDay).forEach((key) => {
-    statsPerDay[key].total = statsPerDay[key].runs.length;
-
-    statsPerDay[key].conclusion = {
-      success: 0,
-      failure: 0,
-      cancelled: 0,
-      startup_failure: 0,
-    };
-    statsPerDay[key].runs.forEach((run: any) => {
-      statsPerDay[key].conclusion[run.conclusion] += 1;
-    });
-
-    statsPerDay[key].successTimes = statsPerDay[key].runs
-      .filter((run: any) => run.conclusion === "success")
-      .map((run: any) => {
-        const createdAtTime = Date.parse(run.run_started_at);
-        const updatedAtTime = Date.parse(run.updated_at);
-        const durationMs = updatedAtTime - createdAtTime;
-        return durationMs / 1000;
-      });
-  });
-
-  return statsPerDay;
-};
-
 const addCalculatedStats = (stats: any) => {
   Object.keys(stats).forEach((key) => {
     stats[key].avgSuccessTime = average(stats[key].successTimes) || null;
@@ -314,7 +286,9 @@ export const getStaticProps = async () => {
       ? await loadMockData()
       : await fectchRuns();
 
-  const stats = addCalculatedStats(sanitizeRuns(runs));
+  const stats = addCalculatedStats(
+    addSuccessTimes(addConclusionSum(groupByDay(runs)))
+  );
 
   return {
     props: {
