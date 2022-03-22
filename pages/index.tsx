@@ -3,14 +3,14 @@ import { useEffect } from 'react';
 import Head from 'next/head'
 import Image from 'next/image'
 import { Octokit } from "@octokit/rest";
+import moment from "moment";
 
-import data from '../mock-data.json';
+import mockData from '../mock-data.json';
 import styles from '../styles/Home.module.css'
 
-const Home: NextPage<{ runs: any }> = ({runs}) => {
+const Home: NextPage<{ stats: any }> = ({stats}) => {
   useEffect(() => {
-    console.log(runs[0])
-    console.log(runs.length)
+    console.log(stats)
   }, []);
 
   return (
@@ -78,40 +78,92 @@ const Home: NextPage<{ runs: any }> = ({runs}) => {
   )
 }
 
+const average = (arr: number[]) => {
+  return arr.reduce((prev, curr) => prev + curr) / arr.length;
+};
+const median = (arr: number[]) => {
+  return arr.slice().sort((a, b) => a - b)[Math.floor(arr.length / 2)];
+};
+
+const movingAvg = (array: number[], countBefore: number, countAfter = 0) => {
+  const result = [];
+  for (let i = 0; i < array.length; i++) {
+    const subArr = array.slice(
+      Math.max(i - countBefore, 0),
+      Math.min(i + countAfter + 1, array.length)
+    );
+    result.push(median(subArr));
+  }
+  return result;
+};
+
+const fectchRuns = async () => {
+  const octokit = new Octokit({
+    auth: process.env.GITHUB_TOKEN,
+  });
+
+  const workflows = await octokit.rest.actions.listRepoWorkflows({
+    owner: process.env.GITHUB_ORG as string,
+    repo: process.env.GITHUB_REPO as string,
+  });
+
+  const workflowId = workflows.data.workflows.find(
+    (workflow) => workflow.name === process.env.GITHUB_WORKFLOW
+  )?.id;
+
+  return await octokit.paginate(octokit.actions.listWorkflowRuns, {
+    owner: process.env.GITHUB_ORG as string,
+    repo: process.env.GITHUB_REPO as string,
+    workflow_id: workflowId as number,
+    per_page: 100,
+    event: "push",
+  });
+}
+
+interface ObjectLiteral {
+  [key: string]: any;
+}
+
+const sanitizeRuns = (runs: any) => {
+  const statsPerDay: ObjectLiteral = {};
+
+  runs.forEach((run) => {
+    const day = moment(run.run_started_at).format("YYYY-MM-DD");
+    if (!statsPerDay[day]) statsPerDay[day] = { runs: [], total: 0 };
+    statsPerDay[day].runs.push(run);
+  })
+
+  Object.keys(statsPerDay).forEach((key) => {
+    statsPerDay[key].total = statsPerDay[key].runs.length;
+
+    statsPerDay[key].conclusion = {
+      success: 0,
+      failure: 0,
+      cancelled: 0,
+      startup_failure: 0,
+    };
+    statsPerDay[key].runs.forEach((run: any) => {
+      statsPerDay[key].conclusion[run.conclusion] += 1;
+    });
+
+    statsPerDay[key].avgSuccessTimes = statsPerDay[key].runs.map((run: any) => {
+      const createdAtTime = Date.parse(run.run_started_at);
+      const updatedAtTime = Date.parse(run.updated_at);
+      const durationMs = updatedAtTime - createdAtTime;
+      return durationMs / 1000;
+    })
+  });
+
+  return statsPerDay
+}
+
 export const getStaticProps = async () => {
-  if (process.env.USE_MOCK_DATA === "true") {
-    return {
-      props: {
-        runs: data,
-      },
-    }
-  } else {
-    const octokit = new Octokit({
-      auth: process.env.GITHUB_TOKEN,
-    });
+  const runs = process.env.USE_MOCK_DATA === "true" ? mockData : fectchRuns()
 
-    const workflows = await octokit.rest.actions.listRepoWorkflows({
-      owner: process.env.GITHUB_ORG as string,
-      repo: process.env.GITHUB_REPO as string,
-    });
-
-    const workflowId = workflows.data.workflows.find(
-      (workflow) => workflow.name === process.env.GITHUB_WORKFLOW
-    )?.id;
-
-    const runs = await octokit.paginate(octokit.actions.listWorkflowRuns, {
-      owner: process.env.GITHUB_ORG as string,
-      repo: process.env.GITHUB_REPO as string,
-      workflow_id: workflowId as number,
-      per_page: 100,
-      event: "push",
-    });
-
-    return {
-      props: {
-        runs,
-      },
-    }
+  return {
+    props: {
+      stats: sanitizeRuns(runs)
+    },
   }
 }
 
