@@ -4,36 +4,48 @@ import { filter } from "./js";
 import { average, median, movingStat } from "./math";
 
 type Runs = ExtractPromiseType<ReturnType<typeof fectchRuns>>;
+type Run = Runs[number];
 
-// interface Stats {
-//   [key: string]: {
-//     runs: Runs;
-//     total: number;
-//     conclusion: {
-//       success: number;
-//       failure: number;
-//       cancelled: number;
-//       startup_failure: number;
-//     };
-//     successTimes: number[];
-//   };
-// }
+interface GroupedStats {
+  [key: string]: {
+    runs: Run[];
+    total: number;
+  };
+}
+
+type ConclusionKey = "success" | "failure" | "cancelled" | "startup_failure";
+
+interface ConclusionStats {
+  [key: string]: {
+    runs: Run[];
+    total: number;
+    conclusion: {
+      success: number;
+      failure: number;
+      cancelled: number;
+      startup_failure: number;
+    };
+  };
+}
 
 export const groupByDay = (runs: Runs) => {
-  const stats: ObjectLiteral = {};
+  const stats: GroupedStats = {};
 
   runs.forEach((run) => {
     if (run.status !== "completed") return;
     const day = moment(run.run_started_at).format("YYYY-MM-DD");
-    if (!stats[day]) stats[day] = { runs: [], total: 0 };
-    stats[day].runs.push(run);
-    stats[day].total++;
+    if (!stats[day]) {
+      stats[day] = { runs: [run], total: 1 };
+    } else {
+      stats[day].runs.push(run);
+      stats[day].total++;
+    }
   });
 
   return stats;
 };
 
-const addConclusionSum = (stats: ObjectLiteral) => {
+const addConclusionSum = (stats: ConclusionStats) => {
   Object.keys(stats)
     .sort()
     .forEach((key) => {
@@ -43,8 +55,8 @@ const addConclusionSum = (stats: ObjectLiteral) => {
         cancelled: 0,
         startup_failure: 0,
       };
-      stats[key].runs.forEach((run: any) => {
-        stats[key].conclusion[run.conclusion] += 1;
+      stats[key].runs.forEach((run) => {
+        stats[key].conclusion[run.conclusion as ConclusionKey] += 1;
       });
     });
 
