@@ -7,10 +7,8 @@ const RepoInfo: NextPage<{
 }> = ({ repoConfig }) => {
   return (
     <h1 className={styles.title}>
-      <code className={styles.code}>
-        {repoConfig.org}/{repoConfig.repo} {repoConfig.workflow}@
-        {repoConfig.branch}
-      </code>
+      {repoConfig.org}/{repoConfig.repo} {repoConfig.workflow}@
+      {repoConfig.branch}
     </h1>
   );
 };

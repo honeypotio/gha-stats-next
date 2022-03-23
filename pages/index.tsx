@@ -31,10 +31,12 @@ const Home: NextPage<{
       <main className={styles.main}>
         {data.map((repoData, i) => {
           return (
-            <div key={i}>
+            <div key={i} style={{ width: "100%" }}>
               <RepoInfo repoConfig={repoData.repoConfig} />
-              <SuccessRate successStats={repoData.successStats} />
-              <Runtime runtimeStats={repoData.runtimeStats} />
+              <div style={{ display: "flex" }}>
+                <SuccessRate successStats={repoData.successStats} />
+                <Runtime runtimeStats={repoData.runtimeStats} />
+              </div>
             </div>
           );
         })}

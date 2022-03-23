@@ -35,7 +35,7 @@ const Runtime: NextPage<{
   };
 
   return (
-    <>
+    <div style={{ width: "100%" }}>
       <p className={styles.description}>CI runtime (seconds) ↘</p>
 
       <p className={styles.latestValue}>
@@ -78,7 +78,7 @@ const Runtime: NextPage<{
           ],
         }}
       />
-    </>
+    </div>
   );
 };
 
