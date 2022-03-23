@@ -30,7 +30,7 @@ const SuccessRate: NextPage<{
     successStats[Object.keys(successStats).sort().slice(-1)[0]];
 
   return (
-    <div style={{ width: "100%", minHeight: "600px" }}>
+    <div style={{ width: "100%" }}>
       <p className={styles.description}>CI success rate (%) ↗ </p>
 
       <p className={styles.latestValue}>
