@@ -88,8 +88,6 @@ const addAverages = (stats: ObjectLiteral) => {
   return stats;
 };
 
-// These are not perfect as the moving stat is calculated based on the avg/median of the day
-// It should rather take each value of the day, but because days have different count of values, keeping track of moving avg/median becomes complicated
 const addMovingTimeStats = (stats: ObjectLiteral) => {
   const movingByDayAvgSuccessTime = {
     seven: movingStat(
@@ -129,6 +127,8 @@ const addMovingTimeStats = (stats: ObjectLiteral) => {
   return stats;
 };
 
+// This is not perfect as the moving stat is calculated based on the avg/median of the day
+// It should rather take every value of the interval
 const addMovingSuccessRateAverage = (stats: ObjectLiteral) => {
   const movingByDaySuccessRate = {
     seven: movingStat(
