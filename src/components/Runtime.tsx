@@ -12,6 +12,7 @@ import {
 } from "chart.js";
 
 import styles from "../../styles/Styles.module.css";
+import moment from "moment";
 
 ChartJS.register(
   CategoryScale,
@@ -26,9 +27,22 @@ ChartJS.register(
 const Runtime: NextPage<{
   runtimeStats: any;
 }> = ({ runtimeStats }) => {
+  const currentDataPoints =
+    runtimeStats[Object.keys(runtimeStats).sort().slice(-1)[0]];
+
+  const formatDate = (seconds: number) => {
+    return moment().startOf("day").seconds(seconds).format("mm:ss");
+  };
+
   return (
     <>
       <p className={styles.description}>CI runtime (seconds) ↘</p>
+
+      <p className={styles.latestValue}>
+        7-point average:{" "}
+        {formatDate(currentDataPoints.movingByDayAvgSuccessTime.seven)} | Daily:{" "}
+        {formatDate(currentDataPoints.avgSuccessTime)}
+      </p>
 
       <Line
         options={{

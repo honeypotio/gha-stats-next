@@ -26,9 +26,18 @@ ChartJS.register(
 const SuccessRate: NextPage<{
   successStats: any;
 }> = ({ successStats }) => {
+  const currentDataPoints =
+    successStats[Object.keys(successStats).sort().slice(-1)[0]];
+
   return (
     <>
-      <p className={styles.description}>CI success rate (%) ↗</p>
+      <p className={styles.description}>CI success rate (%) ↗ </p>
+
+      <p className={styles.latestValue}>
+        7-point average:{" "}
+        {Math.round(currentDataPoints.movingByDaySuccessRate.seven)} % | Daily:{" "}
+        {Math.round(currentDataPoints.successRate)} %
+      </p>
 
       <Line
         options={{

@@ -44,10 +44,13 @@
 
 .description {
   text-align: center;
+  margin: 3rem 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
 }
 
-.description {
-  margin: 4rem 0;
-  line-height: 1.5;
-  font-size: 1.5rem;
+.latestValue {
+  margin: 0rem 0;
+  text-align: center;
+  font-size: 1rem;
 }
