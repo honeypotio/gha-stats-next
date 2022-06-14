@@ -1,4 +1,4 @@
-# ghs-stats-next
+# gha-stats-next
 
 ### Visualized statistics of GitHub Actions CI
 
