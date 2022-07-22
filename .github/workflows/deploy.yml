@@ -23,6 +23,8 @@ jobs:
         env:
           REPO_ACCESS_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
           CONFIG: ${{ secrets.CONFIG }}
+          MOCK_DATA: ${{ secrets.MOCK_DATA }}
+          USE_MOCK_DATA: ${{ secrets.USE_MOCK_DATA }}
         run: yarn build
 
       - name: Deploy
