@@ -2,7 +2,11 @@
 
 ### Visualized statistics of GitHub Actions CI
 
-https://honeypotio.github.io/gha-stats-next/ or [fork me](https://github.com/honeypotio/gha-stats-next/fork)
+Try it at: https://honeypotio.github.io/gha-stats-next/
+
+[Fork me!](https://github.com/honeypotio/gha-stats-next/fork)
+
+![Example](data/example.png)
 
 ## Usage
 
